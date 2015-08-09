@@ -85,6 +85,10 @@
 #define FL_SHORTNUMS 8
 #define FL_NODETAILS 16
 
+
+//int reqcert = LDAP_OPT_X_TLS_DEMAND;
+int ldapversion = LDAP_VERSION3;
+
 struct usage {
 	char *devicename;
 	struct util_dqblk dq_dqb;
@@ -193,6 +197,13 @@ static int setup_ldap(struct configparams *config)
 
 #ifdef USE_LDAP_23
 	ldap_initialize(&ldapconn, config->ldap_uri);
+	ldap_set_option(ldapconn, LDAP_OPT_PROTOCOL_VERSION, &ldapversion);
+	//ldap_set_option(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_DEMAND);
+	//ldap_set_option(NULL, LDAP_OPT_X_TLS_CACERTDIR,"/etc/ssl/certs");
+	if(ldap_start_tls_s(ldapconn, NULL, NULL) != LDAP_SUCCESS){
+		ldap_perror(ldapconn, "ldap_start_tls");
+		exit(0);
+}
 #else
 	ldapconn = ldap_init(config->ldap_host, config->ldap_port);
 #endif
